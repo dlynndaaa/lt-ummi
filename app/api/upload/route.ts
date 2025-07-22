@@ -1,110 +1,71 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, unlink, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
-import { withAuth } from "@/lib/auth/middleware";
+import pool from "@/lib/db/connection";
 
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
-const ALLOWED_EXTENSIONS = [
-  ".jpg",
-  ".jpeg",
-  ".png",
-  ".gif",
-  ".webp",
-  ".svg", // Images
-  ".pdf",
-  ".doc",
-  ".docx",
-  ".txt", // Documents
-  ".zip",
-  ".rar", // Archives
-];
+const PUBLIC_UPLOAD_DIR = path.join(process.cwd(), "public", "upload", "labs");
 
-async function uploadHandler(request: NextRequest & { user: any }) {
-  try {
-    console.log("📤 Upload request received");
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  const labId = params.id;
+  const formData = await req.formData();
+  const files = formData.getAll("photos") as File[];
 
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
-    const folder = (formData.get("folder") as string) || "general";
-
-    console.log("📁 Upload folder:", folder);
-    console.log("📄 File name:", file?.name);
-    console.log("📏 File size:", file?.size);
-
-    if (!file) {
-      console.log("❌ No file provided");
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
-
-    // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-      console.log("❌ File too large:", file.size);
-      return NextResponse.json(
-        { error: "File size exceeds 25MB limit" },
-        { status: 400 }
-      );
-    }
-
-    // Validate file extension
-    const extension = path.extname(file.name).toLowerCase();
-    if (!ALLOWED_EXTENSIONS.includes(extension)) {
-      console.log("❌ Invalid file type:", extension);
-      return NextResponse.json(
-        {
-          error: `File type not allowed. Allowed types: ${ALLOWED_EXTENSIONS.join(
-            ", "
-          )}`,
-        },
-        { status: 400 }
-      );
-    }
-
-    // Create upload directory if it doesn't exist
-    const uploadPath = path.join(UPLOAD_DIR, folder);
-    console.log("📍 Upload path:", uploadPath);
-
-    if (!existsSync(uploadPath)) {
-      await mkdir(uploadPath, { recursive: true });
-      console.log("✅ Created upload directory:", uploadPath);
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    const fileName = `${timestamp}-${randomString}${extension}`;
-    const filePath = path.join(uploadPath, fileName);
-
-    console.log("💾 Saving file to:", filePath);
-
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
-
-    console.log("✅ File saved successfully");
-
-    // Return file info
-    const fileUrl = `/api/files/${folder}/${fileName}`;
-    const fullFileName = `${folder}/${fileName}`;
-
-    const response = {
-      success: true,
-      fileName: fullFileName,
-      fileUrl,
-      originalName: file.name,
-      size: file.size,
-      type: file.type,
-    };
-
-    console.log("📤 Upload response:", response);
-
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error("💥 Upload error:", error);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  if (!existsSync(PUBLIC_UPLOAD_DIR)) {
+    await mkdir(PUBLIC_UPLOAD_DIR, { recursive: true });
   }
+
+  const uploadedUrls: string[] = [];
+
+  for (const file of files) {
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const filename = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+    const filepath = path.join(PUBLIC_UPLOAD_DIR, filename);
+    await writeFile(filepath, bytes);
+
+    const url = `/upload/labs/${filename}`;
+    uploadedUrls.push(url);
+
+    await pool.query(
+      `INSERT INTO laboratory_photos (lab_id, photo_url) VALUES ($1, $2)`,
+      [labId, url]
+    );
+  }
+
+  return NextResponse.json({ uploaded: uploadedUrls });
 }
 
-export const POST = withAuth(uploadHandler);
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const labId = params.id;
+    const body = await req.json();
+    const { photoUrl } = body;
+
+    if (!photoUrl) {
+      return NextResponse.json({ error: "Photo URL is required" }, { status: 400 });
+    }
+
+    console.log("🔍 Menghapus foto:", { labId, photoUrl });
+
+    // Hapus dari database
+    await pool.query(
+      `DELETE FROM laboratory_photos WHERE lab_id = $1 AND photo_url = $2`,
+      [labId, photoUrl]
+    );
+
+    // Hapus dari file system
+    const fileName = path.basename(photoUrl);
+    const filePath = path.join(PUBLIC_UPLOAD_DIR, fileName);
+
+    try {
+      await unlink(filePath);
+    } catch (err) {
+      console.warn("⚠️ Gagal hapus file dari sistem (mungkin sudah tidak ada):", filePath);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("❌ Gagal hapus foto:", error);
+    return NextResponse.json({ error: "Gagal hapus foto" }, { status: 500 });
+  }
+}

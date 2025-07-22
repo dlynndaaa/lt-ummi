@@ -4,8 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
-import { SocialLoginButton } from "@/components/ui/social-login-button"
-import { AuthDivider } from "@/components/ui/auth-divider"
+// import { SocialLoginButton } from "@/components/ui/social-login-button"
+// import { AuthDivider } from "@/components/ui/auth-divider"
 
 export function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -13,7 +13,7 @@ export function RegisterForm() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "user", // default role
+    role: "user",
     phone: "",
     faculty: "",
     study_program: "",
@@ -175,15 +175,6 @@ export function RegisterForm() {
       <Button type="submit" className="w-full bg-black hover:bg-gray-800 text-white py-2.5" disabled={isLoading}>
         {isLoading ? "Creating account..." : "Register"}
       </Button>
-
-      <AuthDivider />
-
-      <SocialLoginButton
-        provider="google"
-        onClick={() => {}}
-        disabled={isLoading}
-        text="Register with Google"
-      />
     </form>
   )
 }

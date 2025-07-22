@@ -51,8 +51,8 @@ export function DashboardHeader({ user, onLogout }: DashboardHeaderProps) {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between">
+    <header className="bg-white border-b border-gray-200 px-6 h-16 flex items-center">
+      <div className="flex items-center justify-between w-full">
         {/* Logo and Greeting */}
         <div className="flex items-center space-x-4">
           <div className="hidden md:block">

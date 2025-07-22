@@ -1,21 +1,17 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
-import { SocialLoginButton } from "@/components/ui/social-login-button"
-import { AuthDivider } from "@/components/ui/auth-divider"
 
 interface LoginFormProps {
   onSubmit?: (data: { email: string; password: string }) => void
   onForgotPassword?: () => void
-  onGoogleLogin?: () => void
   isLoading?: boolean
 }
 
-export function LoginForm({ onSubmit, onForgotPassword, onGoogleLogin, isLoading }: LoginFormProps) {
+export function LoginForm({ onSubmit, onForgotPassword, isLoading }: LoginFormProps) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -25,7 +21,6 @@ export function LoginForm({ onSubmit, onForgotPassword, onGoogleLogin, isLoading
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Basic validation
     const newErrors: Record<string, string> = {}
     if (!formData.email) newErrors.email = "Email is required"
     if (!formData.password) newErrors.password = "Password is required"
@@ -82,10 +77,6 @@ export function LoginForm({ onSubmit, onForgotPassword, onGoogleLogin, isLoading
       <Button type="submit" className="w-full bg-black hover:bg-gray-800 text-white py-2.5" disabled={isLoading}>
         {isLoading ? "Logging in..." : "Log In"}
       </Button>
-
-      <AuthDivider />
-
-      <SocialLoginButton provider="google" onClick={onGoogleLogin} disabled={isLoading} />
     </form>
   )
 }

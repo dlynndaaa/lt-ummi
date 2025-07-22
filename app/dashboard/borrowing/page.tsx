@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { DataTable } from "@/components/ui/data-table";
-import { BorrowingStatusBadge } from "@/components/ui/borrowing-status-badge";
 import { BorrowingForm } from "@/components/forms/borrowing-form";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,6 @@ interface Borrowing {
   borrow_date: string;
   return_date: string;
   purpose: string;
-  status: "pending" | "approved" | "rejected" | "returned";
   borrowing_letter_file_ids?: string;
 }
 
@@ -109,7 +107,6 @@ export default function BorrowingPage() {
     }
   };
 
-  // Handle downloading borrowing letter files
   const handleDownloadBorrowingLetter = async (fileIds: string) => {
     if (!fileIds) return;
 
@@ -117,17 +114,14 @@ export default function BorrowingPage() {
     if (ids.length === 0) return;
 
     try {
-      // Download each file
       for (const fileId of ids) {
         const downloadUrl = FileUploadService.getDownloadUrl(fileId);
         const link = document.createElement("a");
         link.href = downloadUrl;
-        link.download = ""; // Let browser determine filename
+        link.download = "";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-
-        // Small delay between downloads to prevent browser blocking
         if (ids.length > 1) {
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
@@ -176,7 +170,7 @@ export default function BorrowingPage() {
     {
       key: "borrowing_letter_file_ids" as keyof Borrowing,
       title: "Surat Peminjaman",
-      render: (value: string, borrowing: Borrowing) =>
+      render: (value: string) =>
         value ? (
           <Button
             variant="link"
@@ -190,23 +184,6 @@ export default function BorrowingPage() {
         ) : (
           <span className="text-gray-400">-</span>
         ),
-    },
-    {
-      key: "status" as keyof Borrowing,
-      title: "Status",
-      render: (value: string, borrowing: Borrowing) => {
-        const statusMap = {
-          pending: "Menunggu",
-          approved: "Dipinjam",
-          rejected: "Tolak",
-          returned: "Dikembalikan",
-        };
-        return (
-          <BorrowingStatusBadge status={value as any}>
-            {statusMap[value as keyof typeof statusMap]}
-          </BorrowingStatusBadge>
-        );
-      },
     },
   ];
 
@@ -234,7 +211,6 @@ export default function BorrowingPage() {
   const checkAuth = async () => {
     try {
       const response = await fetch("/api/auth/me");
-
       if (response.ok) {
         const data = await response.json();
         setCurrentUser(data.user);
@@ -258,14 +234,13 @@ export default function BorrowingPage() {
           purpose: formData.purpose,
           borrowing_letter_file_ids: formData.borrowingLetterFileIds,
         });
-        await loadBorrowings(); // Reload to get updated data
+        await loadBorrowings();
       } else if (formState.mode === "edit" && formState.item) {
         await apiClient.updateBorrowing(formState.item.id, {
-          status: formData.status,
           notes: formData.notes,
           borrowing_letter_file_ids: formData.borrowingLetterFileIds,
         });
-        await loadBorrowings(); // Reload to get updated data
+        await loadBorrowings();
       }
     } catch (error) {
       console.error("Failed to save borrowing:", error);
@@ -310,7 +285,6 @@ export default function BorrowingPage() {
                 borrowDate: new Date(formState.item.borrow_date),
                 returnDate: new Date(formState.item.return_date),
                 purpose: formState.item.purpose,
-                status: formState.item.status,
                 borrowingLetterFileIds: formState.item.borrowing_letter_file_ids
                   ? formState.item.borrowing_letter_file_ids
                       .split(",")

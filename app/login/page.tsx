@@ -42,10 +42,8 @@ export default function LoginPage() {
   const handleRegister = async (data: { name: string; email: string; password: string; confirmPassword: string }) => {
     setIsLoading(true)
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
       console.log("Register data:", data)
-      // Handle successful registration
     } catch (error) {
       console.error("Register error:", error)
     } finally {
@@ -57,13 +55,12 @@ export default function LoginPage() {
     console.log("Forgot password clicked")
   }
 
-  const handleGoogleLogin = () => {
-    console.log("Google login clicked")
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
+    <div
+      className="min-h-screen bg-cover bg-center flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      style={{ backgroundImage: "url('/gdg-ummi.jpg')" }}
+    >
+      <div className="w-full max-w-md bg-white bg-opacity-90 backdrop-blur-md p-6 rounded-xl shadow-xl">
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
             <p className="text-red-600 text-sm">{error}</p>
@@ -73,13 +70,12 @@ export default function LoginPage() {
           onLogin={handleLogin}
           onRegister={handleRegister}
           onForgotPassword={handleForgotPassword}
-          onGoogleLogin={handleGoogleLogin}
           isLoading={isLoading}
         />
         <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
           <p className="text-blue-800 text-sm font-medium">Demo Credentials:</p>
-          <p className="text-blue-700 text-sm">Admin: admin@simpel-ti.com / admin123</p>
-          <p className="text-blue-700 text-sm">User: user@simpel-ti.com / user123</p>
+          <p className="text-blue-700 text-sm">Admin: admin@lt-ummi.com / admin123</p>
+          <p className="text-blue-700 text-sm">User: user@lt-ummi.com / user123</p>
         </div>
       </div>
     </div>

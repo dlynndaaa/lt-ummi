@@ -6,9 +6,8 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "SIMPEL-TI - Sistem Informasi Inventarisasi & Peminjaman",
-  description: "Sistem Informasi Inventarisasi & Peminjaman Peralatan Laboratorium Teknik Informatika",
-    generator: 'v0.dev'
+  title: "LT-UMMI - Laboratorium Terpadu UMMI",
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
@@ -18,6 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id">
+      <head>
+        <link rel="icon" href="/logo-ummi.png" />
+      </head>
       <body className={inter.className}>{children}</body>
     </html>
   )

@@ -14,14 +14,13 @@ class ApiClient {
     const url = `${this.baseURL}${endpoint}`;
 
     const headers: HeadersInit = {
-      "Content-Type": "application/json",
       ...options.headers,
     };
 
     const response = await fetch(url, {
       ...options,
       headers,
-      credentials: "include", // Include cookies
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -38,6 +37,7 @@ class ApiClient {
   async login(email: string, password: string) {
     return this.request<{ success: boolean; user: any }>("/auth/login", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
   }
@@ -82,6 +82,7 @@ class ApiClient {
   async createItem(data: any) {
     return this.request<{ item: any }>("/items", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
   }
@@ -89,6 +90,7 @@ class ApiClient {
   async updateItem(id: string, data: any) {
     return this.request<{ item: any }>(`/items/${id}`, {
       method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
   }
@@ -127,6 +129,7 @@ class ApiClient {
   async createBorrowing(data: any) {
     return this.request<{ borrowing: any }>("/borrowings", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
   }
@@ -134,6 +137,7 @@ class ApiClient {
   async updateBorrowing(id: string, data: any) {
     return this.request<{ borrowing: any }>(`/borrowings/${id}`, {
       method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
   }
@@ -172,6 +176,7 @@ class ApiClient {
   async createUser(data: any) {
     return this.request<{ user: any }>("/users", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
   }
@@ -179,6 +184,7 @@ class ApiClient {
   async updateUser(id: string, data: any) {
     return this.request<{ user: any }>(`/users/${id}`, {
       method: "PUT",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
   }
@@ -198,6 +204,62 @@ class ApiClient {
     return this.request<{
       borrowers: any[];
     }>(`/users/borrowers${query ? `?${query}` : ""}`);
+  }
+
+  // Lecturers methods
+  async getLecturers() {
+    return this.request<{
+      lecturers: {
+        id: string;
+        name: string;
+        nidn: string;
+        email: string;
+        phone?: string;
+        department: string;
+        photo?: string;
+      }[];
+    }>("/lecturers");
+  }
+
+  async createLecturer(formData: FormData) {
+    const response = await fetch(`${this.baseURL}/lecturers`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Network error" }));
+      throw new Error(error.error || "Request failed");
+    }
+
+    return response.json();
+  }
+
+  async updateLecturer(formData: FormData) {
+    const response = await fetch(`${this.baseURL}/lecturers`, {
+      method: "PUT",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Network error" }));
+      throw new Error(error.error || "Request failed");
+    }
+
+    return response.json();
+  }
+
+  async deleteLecturer(id: string) {
+    const response = await fetch(`${this.baseURL}/lecturers?id=${id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: "Network error" }));
+      throw new Error(error.error || "Request failed");
+    }
+
+    return response.json();
   }
 }
 

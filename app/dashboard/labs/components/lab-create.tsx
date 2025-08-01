@@ -1,36 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-interface Lecturer {
+interface PLP {
   id: number;
   name: string;
 }
 
-interface Props {
-  onSuccess: () => void;
-}
-
-export default function LabCreate({ onSuccess }: Props) {
-  const [lab, setLab] = useState({
+export default function LabCreateForm() {
+  const [plps, setPlps] = useState<PLP[]>([]);
+  const [formData, setFormData] = useState({
     name: "",
     location: "",
-    supervisor: "", // ← masih string karena dari <select>
+    plp_id: "",
     capacity: "",
     description: "",
   });
 
   const [photos, setPhotos] = useState<File[]>([]);
   const [message, setMessage] = useState("");
-  const [lecturers, setLecturers] = useState<Lecturer[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
-    const loadLecturers = async () => {
-      const res = await fetch("/api/lecturers");
-      const data = await res.json();
-      setLecturers(data.lecturers);
+    const fetchPlps = async () => {
+      try {
+        const res = await fetch("/api/plps");
+        const data = await res.json();
+        setPlps(data);
+      } catch (error) {
+        console.error("Gagal memuat data PLP:", error);
+      }
     };
-    loadLecturers();
+
+    fetchPlps();
   }, []);
 
   const handleChange = (
@@ -38,7 +41,8 @@ export default function LabCreate({ onSuccess }: Props) {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
-    setLab({ ...lab, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,37 +55,43 @@ export default function LabCreate({ onSuccess }: Props) {
     e.preventDefault();
     setMessage("Menyimpan...");
 
-    // Convert supervisor ID to integer
     const payload = {
-      ...lab,
-      supervisor: parseInt(lab.supervisor), // convert string ke integer
+      ...formData,
+      plp_id: parseInt(formData.plp_id),
+      capacity: formData.capacity ? parseInt(formData.capacity) : null,
     };
 
-    const res = await fetch("/api/labs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      setMessage("Gagal menyimpan data.");
-      return;
-    }
-
-    const { id: newLabId } = await res.json();
-
-    if (photos.length > 0) {
-      const formData = new FormData();
-      photos.forEach((file) => formData.append("photos", file));
-
-      await fetch(`/api/labs/${newLabId}/upload`, {
+    try {
+      const res = await fetch("/api/labs", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
-    }
 
-    setMessage("Berhasil ditambahkan!");
-    onSuccess();
+      if (!res.ok) {
+        setMessage("Gagal menyimpan data.");
+        return;
+      }
+
+      const { id: newLabId } = await res.json();
+
+      if (photos.length > 0) {
+        const formDataUpload = new FormData();
+        photos.forEach((file) => formDataUpload.append("photos", file));
+
+        await fetch(`/api/labs/${newLabId}/upload`, {
+          method: "POST",
+          body: formDataUpload,
+        });
+      }
+
+      setMessage("Berhasil ditambahkan!");
+      router.refresh();
+      router.push("/dashboard/labs");
+    } catch (error) {
+      console.error("Terjadi kesalahan:", error);
+      setMessage("Terjadi kesalahan saat menyimpan.");
+    }
   };
 
   return (
@@ -93,7 +103,7 @@ export default function LabCreate({ onSuccess }: Props) {
           <label className="block text-sm">Nama</label>
           <input
             name="name"
-            value={lab.name}
+            value={formData.name}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded"
             required
@@ -103,25 +113,25 @@ export default function LabCreate({ onSuccess }: Props) {
           <label className="block text-sm">Lokasi</label>
           <input
             name="location"
-            value={lab.location}
+            value={formData.location}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded"
             required
           />
         </div>
         <div>
-          <label className="block text-sm">Koordinator Laboratorium</label>
+          <label className="block text-sm">PLP Laboratorium</label>
           <select
-            name="supervisor"
-            value={lab.supervisor}
+            name="plp_id"
+            value={formData.plp_id}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded"
             required
           >
-            <option value="">Pilih Koordinator</option>
-            {lecturers.map((lecturer) => (
-              <option key={lecturer.id} value={lecturer.id}>
-                {lecturer.name}
+            <option value="">Pilih PLP</option>
+            {plps.map((plp) => (
+              <option key={plp.id} value={plp.id}>
+                {plp.name}
               </option>
             ))}
           </select>
@@ -131,7 +141,7 @@ export default function LabCreate({ onSuccess }: Props) {
           <input
             name="capacity"
             type="number"
-            value={lab.capacity}
+            value={formData.capacity}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded"
           />
@@ -140,7 +150,7 @@ export default function LabCreate({ onSuccess }: Props) {
           <label className="block text-sm">Deskripsi</label>
           <textarea
             name="description"
-            value={lab.description}
+            value={formData.description}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded"
           />

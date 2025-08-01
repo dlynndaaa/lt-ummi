@@ -76,7 +76,7 @@ export default function LabDetail({ labId }: LabDetailProps) {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700">Koordinator Laboratorium</label>
+          <label className="text-sm font-medium text-gray-700">PLP Laboratorium</label>
           <div className="mt-1 border border-gray-300 bg-gray-50 rounded px-3 py-2 text-sm">
             {lab.supervisor}
           </div>

@@ -12,7 +12,7 @@ export async function GET(
     const result = await pool.query(
       `SELECT id, name, location, supervisor_id, capacity, description
        FROM laboratories
-       WHERE id = $1 AND is_deleted = FALSE`,
+       WHERE id = $1`,
       [id]
     );
 
@@ -61,13 +61,9 @@ export async function DELETE(
   const id = Number(params.id);
 
   try {
-    // Soft delete: set is_deleted = TRUE
-    await pool.query(
-      `UPDATE laboratories SET is_deleted = TRUE WHERE id = $1`,
-      [id]
-    );
+    await pool.query(`DELETE FROM laboratories WHERE id = $1`, [id]);
 
-    return new NextResponse("Laboratorium berhasil dihapus", { status: 200 });
+    return new NextResponse("Laboratorium berhasil dihapus secara permanen", { status: 200 });
   } catch (error) {
     console.error("DELETE error:", error);
     return new NextResponse("Gagal menghapus laboratorium", { status: 500 });

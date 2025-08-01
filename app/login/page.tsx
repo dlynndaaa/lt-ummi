@@ -26,7 +26,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         console.log("✅ Login successful:", result.user.name)
-        router.push("/dashboard/items")
+        router.push("/dashboard/jadwal-praktikum")
         router.refresh()
       } else {
         setError(result.error || "Login failed")

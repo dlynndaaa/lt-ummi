@@ -9,9 +9,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       `SELECT 
         l.id, l.name, l.location, l.description, l.capacity,
         l.supervisor_id,
-        lec.name AS supervisor
+        p.name AS supervisor
        FROM laboratories l
-       LEFT JOIN lecturers lec ON l.supervisor_id = lec.id
+       LEFT JOIN plps p ON l.supervisor_id = p.id
        WHERE l.id = $1`,
       [id]
     );

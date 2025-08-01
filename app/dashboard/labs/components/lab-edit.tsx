@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-interface Lecturer {
+interface PLP {
   id: number;
   name: string;
 }
@@ -10,7 +10,7 @@ interface Lecturer {
 interface LabData {
   name: string;
   location: string;
-  supervisor: number | string;
+  plp_id: number | string;
   capacity: string;
   description: string;
   photos: string[];
@@ -25,37 +25,37 @@ export default function LabEdit({ labId, onSuccess }: LabEditProps) {
   const [lab, setLab] = useState<LabData>({
     name: "",
     location: "",
-    supervisor: "",
+    plp_id: "",
     capacity: "",
     description: "",
     photos: [],
   });
 
   const [newPhotos, setNewPhotos] = useState<File[]>([]);
-  const [lecturers, setLecturers] = useState<Lecturer[]>([]);
+  const [plps, setPlps] = useState<PLP[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [labRes, lecturerRes] = await Promise.all([
+        const [labRes, plpRes] = await Promise.all([
           fetch(`/api/labs/${labId}/detail`),
-          fetch("/api/lecturers"),
+          fetch("/api/plps"),
         ]);
         const labData = await labRes.json();
-        const lecturerData = await lecturerRes.json();
+        const plpData = await plpRes.json();
 
         setLab({
           name: labData.name,
           location: labData.location,
-          supervisor: labData.supervisor_id ?? "",
+          plp_id: labData.plp_id ?? "",
           capacity: labData.capacity?.toString() || "",
           description: labData.description || "",
           photos: labData.photos || [],
         });
 
-        setLecturers(lecturerData.lecturers);
+        setPlps(plpData);
         setLoading(false);
       } catch (error) {
         console.error("Gagal memuat data:", error);
@@ -108,7 +108,7 @@ export default function LabEdit({ labId, onSuccess }: LabEditProps) {
         body: JSON.stringify({
           name: lab.name,
           location: lab.location,
-          supervisor: parseInt(lab.supervisor.toString()),
+          plp_id: parseInt(lab.plp_id.toString()),
           capacity: parseInt(lab.capacity),
           description: lab.description,
         }),
@@ -119,7 +119,6 @@ export default function LabEdit({ labId, onSuccess }: LabEditProps) {
         return;
       }
 
-      // Upload multiple photos
       if (newPhotos.length > 0) {
         const formData = new FormData();
         newPhotos.forEach((file) => formData.append("photos", file));
@@ -179,18 +178,18 @@ export default function LabEdit({ labId, onSuccess }: LabEditProps) {
         </div>
 
         <div>
-          <label className="block text-sm">Koordinator Laboratorium</label>
+          <label className="block text-sm">PLP Laboratorium</label>
           <select
-            name="supervisor"
-            value={lab.supervisor}
+            name="plp_id"
+            value={lab.plp_id}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded"
             required
           >
-            <option value="">Pilih Dosen</option>
-            {lecturers.map((lect) => (
-              <option key={lect.id} value={lect.id}>
-                {lect.name}
+            <option value="">Pilih PLP</option>
+            {plps.map((plp) => (
+              <option key={plp.id} value={plp.id}>
+                {plp.name}
               </option>
             ))}
           </select>

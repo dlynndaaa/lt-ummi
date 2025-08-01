@@ -16,6 +16,7 @@ interface Pengampu {
   class: string;
   semester: string;
   study_program: string;
+  lab: string; // ✅ Kolom laboratorium
   no?: number;
 }
 
@@ -67,6 +68,7 @@ export default function PengampuPage() {
     { key: "class", title: "Kelas", render: (_: any, item: Pengampu) => item.class },
     { key: "semester", title: "Semester", render: (_: any, item: Pengampu) => item.semester },
     { key: "study_program", title: "Program Studi", render: (_: any, item: Pengampu) => item.study_program },
+    { key: "lab", title: "Laboratorium", render: (_: any, item: Pengampu) => item.lab }, // ✅ Tambahan kolom
     {
       key: "actions",
       title: "Aksi",

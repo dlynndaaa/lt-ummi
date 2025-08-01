@@ -63,14 +63,15 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
     { title: "Data Semester", href: "/dashboard/data-semester", icon: Calendar },
     { title: "Pengampu Praktikum", href: "/dashboard/pengampu", icon: UserCheck },
     { title: "Waktu", href: "/dashboard/waktu", icon: AlarmClock },
-    { title: "Hari", href: "/dashboard/hari", icon: CalendarDays },
-    { title: "Jadwal Praktikum", href: "/dashboard/jadwal", icon: DoorClosed },
+    { title: "Hari", href: "/dashboard/days", icon: CalendarDays },
+    { title: "Ruang Laboratorium", href: "/dashboard/labs", icon: FlaskConical }, // <- dipindah & diubah nama
+    { title: "Jadwal Praktikum", href: "/dashboard/jadwal-praktikum", icon: DoorClosed },
   ]);
 
   const sdmItems = filterItems([
     { title: "Data Dosen", href: "/dashboard/lecturers", icon: GraduationCap },
-    { title: "Data PLP", href: "/dashboard/plp", icon: User },
-    { title: "Data UPT-LT", href: "/dashboard/upt-lt", icon: Building2 },
+    { title: "Data PLP", href: "/dashboard/plps", icon: User },
+    { title: "Data UPT-LT", href: "/dashboard/upt-lts", icon: Building2 },
     { title: "Data Pengguna", href: "/dashboard/users", icon: UserCog, adminOnly: true },
   ]);
 
@@ -78,7 +79,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
     { title: "Daftar Barang", href: "/dashboard/items", icon: Package, adminOnly: true },
     { title: "Daftar Peminjaman", href: "/dashboard/borrowing", icon: FileText },
     { title: "Status Peminjaman", href: "/dashboard/borrowing-status", icon: Clock },
-    { title: "Daftar Laboratorium", href: "/dashboard/labs", icon: FlaskConical },
+    // "Daftar Laboratorium" dihapus dari sini
   ]);
 
   const [open, setOpen] = useState({
